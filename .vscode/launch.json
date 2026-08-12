@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "(gdb) Launch",
+      "type": "cppdbg",
+      "request": "launch",
+      // 1. 빌드 결과물 경로 (tasks.json의 출력 파일명과 동일해야 함)
+      "program": "${fileDirname}/${fileBasenameNoExtension}.exe", 
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${fileDirname}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      // 2. ★ 중요: 디버깅 시작 전 tasks.json의 빌드 작업을 먼저 실행하도록 연결
+      "preLaunchTask": "C/C++: gcc build active file" 
+    }
+  ]
+}

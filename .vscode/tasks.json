@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "shell",
+      // ★ launch.json의 preLaunchTask 이름과 100% 일치해야 함
+      "label": "C/C++: gcc build active file", 
+      "command": "gcc",
+      "args": [
+        "-g",
+        "${file}",
+        "-o",
+        // launch.json의 program 경로와 동일하게 설정
+        "${fileDirname}/${fileBasenameNoExtension}.exe" 
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
