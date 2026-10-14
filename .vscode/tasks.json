@@ -17,6 +17,28 @@
         "kind": "build",
         "isDefault": true
       }
+    },
+    {
+      "type": "shell",
+      "label": "Build FSM terminal demo",
+      "command": "gcc",
+      "args": [
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-g",
+        "${workspaceFolder}/fsm_cli_demo.c",
+        "${workspaceFolder}/fsm_cli_ui.c",
+        "${workspaceFolder}/fsm_practice.c",
+        "-o",
+        "${workspaceFolder}/fsm_cli_demo.exe"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": ["$gcc"],
+      "group": "build"
     }
   ]
 }

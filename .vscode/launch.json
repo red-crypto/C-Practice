@@ -16,6 +16,20 @@
       "miDebuggerPath": "gdb",
       // 2. ★ 중요: 디버깅 시작 전 tasks.json의 빌드 작업을 먼저 실행하도록 연결
       "preLaunchTask": "C/C++: gcc build active file" 
+    },
+    {
+      "name": "FSM Terminal UI",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/fsm_cli_demo.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "preLaunchTask": "Build FSM terminal demo"
     }
   ]
 }
