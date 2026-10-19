@@ -7,9 +7,18 @@ typedef enum
     HOME_SEARCH,
     HOME_DONE
 } home_e;
+typedef enum
+{
+    HOME_READY,
+    HOME_RUNNING,
+    HOME_SUCCESS,
+    HOME_FAILED
+} home_result_t;
+
 typedef struct
 {
     home_e state;
+    home_result_t h_result;
 } home_t;
 
 typedef enum
@@ -63,7 +72,7 @@ typedef struct {
 
 fsm_result_t Fsm_Init(fsm_t *fsm);
 fsm_result_t Fsm_Dispatch(fsm_t *fsm, event_t event);
-void homing_fsm(fsm_t *fsm, event_t event);
+home_result_t homing_fsm(fsm_t *fsm, event_t event);
 void motion_fsm(fsm_t *fsm, event_t event);
 // Observation functions must not change the FSM or print to the terminal.
 const char *Fsm_StateName(state_t state);

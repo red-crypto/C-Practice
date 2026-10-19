@@ -25,6 +25,8 @@ static bool s_traj_started;
 static ULONGLONG s_homing_start_ms;
 static bool s_homing_started;
 
+bool g_homed = 0;
+
 void timer_start(void)
 {
     s_timer_ms = GetTickCount64();
@@ -112,9 +114,22 @@ void motion_fsm(fsm_t *fsm, event_t event)
 
 }
 
-void homing_fsm(fsm_t *fsm, event_t event)
+home_result_t homing_fsm(fsm_t *fsm, event_t event)
 {
     // event_t event;
+    // event가 들어오더라도, STATE가 FAULT인 경우 event를 무시하고 버린다.
+    // homing은 Supervisor FSM상태가 FAULT가 아닌경우,
+    // homed 가 1이 아닌경우에 수행한다. <- 이정도는 플래그로 관리
+
+    if(fsm->state == STATE_FAULT)
+    {
+        return HOME_FAILED;
+    }
+    if(g_homed != 0)
+    {
+        return HOME_SUCCESS;
+    }
+
     switch(fsm->s_home.state)
     {
         case HOME_IDLE:
@@ -133,6 +148,7 @@ void homing_fsm(fsm_t *fsm, event_t event)
 
                 fsm->s_home.state = HOME_START;
             }
+            return HOME_READY;
         break;  
         case HOME_START:
             //자동이행? 그럼 왜 굳이 state를 나눠야할까?
@@ -140,7 +156,7 @@ void homing_fsm(fsm_t *fsm, event_t event)
             motion_start(fsm);
 
             fsm->s_home.state= HOME_SEARCH;
-
+            return HOME_RUNNING;
 
         break;
         case HOME_SEARCH:
@@ -153,24 +169,25 @@ void homing_fsm(fsm_t *fsm, event_t event)
                 fsm->s_home.state= HOME_DONE;
 
             }
-
+            return HOME_RUNNING;
         break;
 
         case HOME_DONE:
             if(event == EV_IDLE)
             {
                 fsm->s_home.state = HOME_IDLE;
-                
             // return으로 지속적으로 dispatcher에게 상태를 전달해야함..?
             }
-
+            return HOME_SUCCESS;
         break;
 
         default:
             //fsm->state = STATE_FAULT를 하지 않고, 상태만 전달해서 Fsm_Dispatch에서 직접 상태전이하도록 만든다.
+            return HOME_FAILED;
         break;
     
     }
+    return HOME_READY;
 }
 
 
