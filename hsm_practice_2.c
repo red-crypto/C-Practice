@@ -32,12 +32,12 @@ typedef enum
     EV_RESET
 } event_t;
 
-typedef struct 
+typedef struct
 {
     state_t state;
     bool led_on;
+    bool blink_timer_running;
 } led_hsm_t;
-
 
 
 static const char *StateName(state_t s)
@@ -201,7 +201,44 @@ state_t FindLca(state_t source, state_t target)
 // 내가 고민하던 그래서 언제 켜야하는데? 에 대한 답변은
 // Entry의 실행과 함께 동작하는것으로 정하는게 좋다
 // 이유 : 상태 전이 알고리즘이 LED라는 별개 하드웨어를 알 필요가 없기 때문.
+static void OnEntry(led_hsm_t *h, state_t s)
+{
+    printf("ENTRY: %s\n", StateName(s));
 
+    switch (s)
+    {
+        case ST_OFF:
+            h->led_on = false;
+            break;
+
+        case ST_SOLID:
+            h->led_on = true;
+            break;
+
+        case ST_BLINK:
+            h->led_on = true;
+            h->blink_timer_running = true;
+            break;
+
+        default:
+            break;
+    }
+}
+
+static void OnExit(led_hsm_t *h, state_t s)
+{
+    printf("EXIT: %s\n", StateName(s));
+
+    switch (s)
+    {
+        case ST_BLINK:
+            h->blink_timer_running = false;
+            break;
+
+        default:
+            break;
+    }
+}
 
 
 
@@ -210,9 +247,56 @@ state_t FindLca(state_t source, state_t target)
 // ST_BLINK -> ST_OFF, LCA == ST_TOP
 //
 
-void Hsm_Transition()
+static void Hsm_Transition(
+    led_hsm_t *h,
+    state_t target)
 {
+    state_t source = h->state;
 
+    // 1. 최소 공통 조상 찾기
+    state_t lca = FindLca(source, target);
+
+    assert(lca != ST_NONE);
+
+    printf("TRANSITION: %s -> %s\n",
+           StateName(source),
+           StateName(target));
+
+    printf("LCA: %s\n", StateName(lca));
+
+    // 2. 현재 상태부터 LCA 직전까지 Exit
+    state_t s = source;
+
+    while (s != lca)
+    {
+        OnExit(h, s);
+        s = Parent(s);
+    }
+
+    // 3. LCA부터 목표 상태까지의 Entry 경로 준비
+    state_t entry_path[8];
+    int count = 0;
+
+    s = target;
+
+    while (s != lca)
+    {
+        assert(s != ST_NONE);
+        assert(count < 8);
+
+        entry_path[count++] = s;
+        s = Parent(s);
+    }
+
+    // 4. 역순으로 Entry 실행
+    while (count > 0)
+    {
+        count--;
+        OnEntry(h, entry_path[count]);
+    }
+
+    // 5. 현재 상태 업데이트
+    h->state = target;
 }
 
 void Hsm_Dispatch(led_hsm_t *h, event_t event)
